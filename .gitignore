@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual Environment
+.venv/
+venv/
+
+# Environment Variables
+.env
+
+# Logs
+*.log
+outputs/logs/
+
+# SQLite Database
+outputs/database/*.db
+
+# Generated Outputs
+outputs/csv/
+outputs/sql_results/
+outputs/dataframe_results/
+
+# VS Code
+.vscode/
+
+# OS Files
+.DS_Store
+Thumbs.db
