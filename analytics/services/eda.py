@@ -4,16 +4,14 @@ Exploratory Data Analysis (EDA) service.
 
 from __future__ import annotations
 
-from pathlib import Path
+from io import StringIO
 
-import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
 
 from config.logging_config import get_logger
 from config.settings import (
-    FIGURES_DIRECTORY,
-    OUTPUTS_DIRECTORY,
+    DATASET_BACKUP_PATH,
+    REPORTS_DIRECTORY,
 )
 
 logger = get_logger(__name__)
@@ -21,23 +19,14 @@ logger = get_logger(__name__)
 
 class EDAService:
     """
-    Performs exploratory data analysis on the Titanic dataset.
+    Performs Task A.1 of the analytics pipeline.
     """
 
     def __init__(
         self,
     ) -> None:
 
-        self.report_directory = (
-            OUTPUTS_DIRECTORY / "reports"
-        )
-
-        self.report_directory.mkdir(
-            parents=True,
-            exist_ok=True,
-        )
-
-        FIGURES_DIRECTORY.mkdir(
+        REPORTS_DIRECTORY.mkdir(
             parents=True,
             exist_ok=True,
         )
@@ -45,147 +34,179 @@ class EDAService:
     def run(
         self,
         dataframe: pd.DataFrame,
-    ) -> None:
+    ) -> pd.DataFrame:
         """
-        Execute all EDA tasks.
+        Execute dataset profiling.
 
         Args:
             dataframe:
-                Titanic dataset.
+                Titanic DataFrame.
+
+        Returns:
+            Original DataFrame.
         """
 
         logger.info(
-            "Starting Exploratory Data Analysis."
+            "Starting dataset profiling."
         )
 
-        self.dataset_overview(
+        self.save_dataset(
             dataframe,
         )
 
-        self.summary_statistics(
+        self.dataset_shape(
             dataframe,
         )
 
-        self.missing_values(
+        self.dataset_info(
             dataframe,
         )
 
-        self.target_distribution(
+        self.dataset_description(
+            dataframe,
+        )
+
+        self.missing_value_report(
             dataframe,
         )
 
         logger.info(
-            "EDA completed successfully."
+            "Dataset profiling completed."
         )
 
-    def dataset_overview(
+        logger.info(
+            "Task A.1 completed successfully."
+        )
+        return dataframe
+
+    def save_dataset(
         self,
         dataframe: pd.DataFrame,
     ) -> None:
         """
-        Save dataset overview.
+        Save dataset as offline backup.
         """
 
-        overview = pd.DataFrame(
-            {
-                "Column": dataframe.columns,
-                "Data Type": dataframe.dtypes.astype(str),
-                "Missing Values": dataframe.isnull().sum().values,
-            }
-        )
-
-        overview.to_csv(
-            self.report_directory
-            / "dataset_overview.csv",
+        dataframe.to_csv(
+            DATASET_BACKUP_PATH,
             index=False,
             encoding="utf-8-sig",
         )
 
         logger.info(
-            "Dataset overview saved."
+            "Dataset backup saved to %s",
+            DATASET_BACKUP_PATH,
         )
 
-    def summary_statistics(
+    def dataset_shape(
         self,
         dataframe: pd.DataFrame,
     ) -> None:
         """
-        Save descriptive statistics.
+        Print dataset shape.
         """
 
-        dataframe.describe(
+        print("\nDataset Shape\n")
+
+        print(
+            dataframe.shape,
+        )
+
+    def dataset_info(
+        self,
+        dataframe: pd.DataFrame,
+    ) -> None:
+        """
+        Print and save dataframe info.
+        """
+
+        buffer = StringIO()
+
+        dataframe.info(
+            buf=buffer,
+        )
+
+        info_text = buffer.getvalue()
+
+        print("\nDataset Information\n")
+
+        print(
+            info_text,
+        )
+
+        with open(
+            REPORTS_DIRECTORY
+            / "dataset_info.txt",
+            "w",
+            encoding="utf-8",
+        ) as file:
+
+            file.write(
+                info_text,
+            )
+
+    def dataset_description(
+        self,
+        dataframe: pd.DataFrame,
+    ) -> None:
+        """
+        Print and save descriptive statistics.
+        """
+
+        description = dataframe.describe(
             include="all",
-        ).transpose().to_csv(
-            self.report_directory
-            / "summary_statistics.csv",
+        )
+
+        print("\nDataset Description\n")
+
+        print(
+            description,
+        )
+
+        description.to_csv(
+            REPORTS_DIRECTORY
+            / "dataset_description.csv",
             encoding="utf-8-sig",
         )
 
-        logger.info(
-            "Summary statistics saved."
-        )
-
-    def missing_values(
+    def missing_value_report(
         self,
         dataframe: pd.DataFrame,
     ) -> None:
         """
-        Save missing value report.
+        Compute percentage of missing values.
         """
 
-        missing = pd.DataFrame(
-            {
-                "Missing Values":
-                dataframe.isnull().sum(),
+        missing = (
+            dataframe.isnull()
+            .mean()
+            .mul(100)
+            .round(2)
+        )
 
-                "Percentage":
-                (
-                    dataframe.isnull().mean()
-                    * 100
-                ).round(2),
+        missing = missing[
+            missing > 0
+        ]
+
+        report = pd.DataFrame(
+            {
+                "Missing Percentage":
+                missing,
             }
         )
 
-        missing.to_csv(
-            self.report_directory
+        print("\nMissing Values (%)\n")
+
+        print(
+            report,
+        )
+
+        report.to_csv(
+            REPORTS_DIRECTORY
             / "missing_values.csv",
             encoding="utf-8-sig",
         )
 
         logger.info(
-            "Missing value report saved."
-        )
-
-    def target_distribution(
-        self,
-        dataframe: pd.DataFrame,
-    ) -> None:
-        """
-        Plot survival distribution.
-        """
-
-        plt.figure(
-            figsize=(6, 4),
-        )
-
-        sns.countplot(
-            data=dataframe,
-            x="survived",
-        )
-
-        plt.title(
-            "Survival Distribution",
-        )
-
-        plt.tight_layout()
-
-        plt.savefig(
-            FIGURES_DIRECTORY
-            / "survival_distribution.png"
-        )
-
-        plt.close()
-
-        logger.info(
-            "Survival distribution figure saved."
+            "Missing value report generated."
         )

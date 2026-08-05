@@ -4,6 +4,7 @@ Entry point for Analytics module.
 
 from config.logging_config import get_logger
 from datasets.titanic_loader import TitanicDatasetLoader
+from services.preprocessing import PreprocessingService
 
 
 logger = get_logger(__name__)
@@ -25,7 +26,13 @@ def main() -> None:
     from services.eda import EDAService
     eda = EDAService()
 
-    eda.run(
+    dataframe = eda.run(
+        dataframe,
+    )
+
+    preprocessor = PreprocessingService()
+
+    dataframe = preprocessor.run(
         dataframe,
     )
 

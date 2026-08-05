@@ -1,0 +1,5 @@
+﻿column,missing_percentage,action,justification
+age,19.87,Median Imputation,Missing percentage is between 5% and 30%. Median imputation was applied as specified by the rubric.
+embarked,0.22,Drop Rows,Missing percentage is below 5%. Rows containing missing values were removed as specified by the rubric.
+deck,77.22,Drop Column,Missing percentage is above 30%. The column was dropped because imputation would be unreliable for such a high proportion of missing values.
+embark_town,0.22,Drop Rows,Missing percentage is below 5%. Rows containing missing values were removed as specified by the rubric.

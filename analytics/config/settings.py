@@ -64,3 +64,19 @@ CROSS_VALIDATION_FOLDS = int(
         5,
     )
 )
+
+# ==========================================
+# Dataset Backup
+# ==========================================
+
+DATASET_BACKUP_NAME = "titanic.csv"
+
+DATASET_BACKUP_PATH = (
+    OUTPUTS_DIRECTORY
+    / DATASET_BACKUP_NAME
+)
+
+REPORTS_DIRECTORY = (
+    OUTPUTS_DIRECTORY
+    / "reports"
+)

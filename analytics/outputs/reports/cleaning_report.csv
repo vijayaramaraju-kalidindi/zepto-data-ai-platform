@@ -1,0 +1,5 @@
+﻿column,missing_percentage,action
+age,19.87,Median Imputation
+embarked,0.22,Dropped 2 rows
+deck,77.22,Dropped Column
+embark_town,0.22,Dropped 0 rows
