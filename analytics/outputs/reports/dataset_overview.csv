@@ -1,0 +1,16 @@
+﻿Column,Data Type,Missing Values
+survived,int64,0
+pclass,int64,0
+sex,str,0
+age,float64,177
+sibsp,int64,0
+parch,int64,0
+fare,float64,0
+embarked,str,2
+class,category,0
+who,str,0
+adult_male,bool,0
+deck,category,688
+embark_town,str,2
+alive,str,0
+alone,bool,0

@@ -21,6 +21,13 @@ def main() -> None:
     loader = TitanicDatasetLoader()
 
     dataframe = loader.load_dataset()
+    
+    from services.eda import EDAService
+    eda = EDAService()
+
+    eda.run(
+        dataframe,
+    )
 
     logger.info(
         "Rows: %s",
