@@ -6,10 +6,10 @@ from config.logging_config import get_logger
 from datasets.titanic_loader import TitanicDatasetLoader
 from services.preprocessing import PreprocessingService
 from services.univariate_analysis import (UnivariateAnalysisService,)
-
+from services.bivariate_analysis import (BivariateAnalysisService,)
+from services.multivariate_analysis import (MultivariateAnalysisService,)
 
 logger = get_logger(__name__)
-
 
 def main() -> None:
     """
@@ -45,6 +45,22 @@ def main() -> None:
         dataframe,
     )
 
+    bivariate = (
+    BivariateAnalysisService()
+    )
+
+    bivariate.run(
+        dataframe,
+    )
+    
+    multivariate = (
+    MultivariateAnalysisService()
+)
+
+    multivariate.run(
+        dataframe,
+    )
+    
     logger.info(
         "Rows: %s",
         len(dataframe),
