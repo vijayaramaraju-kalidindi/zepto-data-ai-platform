@@ -8,6 +8,8 @@ from services.preprocessing import PreprocessingService
 from services.univariate_analysis import (UnivariateAnalysisService,)
 from services.bivariate_analysis import (BivariateAnalysisService,)
 from services.multivariate_analysis import (MultivariateAnalysisService,)
+from services.standardization_check import (StandardizationCheckService,)
+
 
 logger = get_logger(__name__)
 
@@ -58,6 +60,12 @@ def main() -> None:
 )
 
     multivariate.run(
+        dataframe,
+    )
+    
+    standardization = StandardizationCheckService()
+
+    standardization.run(
         dataframe,
     )
     
