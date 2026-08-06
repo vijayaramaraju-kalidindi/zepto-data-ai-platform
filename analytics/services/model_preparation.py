@@ -82,11 +82,19 @@ class ModelPreparationService:
             "Classification target: survived"
         )
 
-        X = dataframe.drop(
-            columns=[
-                "survived",
-            ],
-        )
+        feature_columns = [
+            "pclass",
+            "age",
+            "sibsp",
+            "parch",
+            "fare",
+            "sex",
+            "embarked",
+        ]
+
+        X = dataframe[
+            feature_columns
+        ].copy()
 
         y = dataframe[
             "survived"

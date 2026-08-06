@@ -12,6 +12,7 @@ from services.multivariate_analysis import (MultivariateAnalysisService,)
 from services.standardization_check import (StandardizationCheckService,)
 from services.model_preparation import (ModelPreparationService,)
 from services.preprocessing_pipeline import (PreprocessingPipelineService,)
+from services.classification_models import (ClassificationModelsService,)
 
 logger = get_logger(__name__)
 
@@ -95,6 +96,17 @@ def main() -> None:
 
     column_transformer = (
     preprocessing_pipeline.run()
+)
+    classification_models = (
+    ClassificationModelsService()
+)
+
+    trained_models = (
+        classification_models.run(
+        X_train=X_train,
+        y_train=y_train,
+        column_transformer=column_transformer,
+    )
 )
     
     logger.info(
