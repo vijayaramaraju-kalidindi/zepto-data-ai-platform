@@ -1,0 +1,1 @@
+The cleaned Titanic dataset contains 38.25% survivors and 61.75% non-survivors. A stratified train/test split preserves this class distribution in both training and testing datasets, ensuring representative sampling and reducing the risk of biased model evaluation.

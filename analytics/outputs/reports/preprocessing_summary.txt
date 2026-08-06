@@ -1,0 +1,46 @@
+TASK B.2 - PREPROCESSING PIPELINE
+
+========================================
+
+NUMERICAL FEATURES
+
+pclass, age, sibsp, parch, fare
+
+Missing Value Strategy
+Median Imputation
+
+Scaling
+StandardScaler
+
+========================================
+
+CATEGORICAL FEATURES
+
+sex, embarked
+
+Missing Value Strategy
+Most Frequent Imputation
+
+Encoding
+OneHotEncoder(handle_unknown="ignore")
+
+========================================
+
+IMPLEMENTATION
+
+ColumnTransformer
+
+Pipeline Ready
+
+Training Data
+
+All preprocessing components are fitted
+only on the training dataset.
+
+Testing Data
+
+The test dataset is transformed using
+the fitted preprocessing pipeline.
+
+This implementation prevents data leakage
+and follows the assignment rubric.
