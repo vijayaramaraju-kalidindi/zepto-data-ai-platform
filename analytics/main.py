@@ -13,6 +13,7 @@ from services.standardization_check import (StandardizationCheckService,)
 from services.model_preparation import (ModelPreparationService,)
 from services.preprocessing_pipeline import (PreprocessingPipelineService,)
 from services.classification_models import (ClassificationModelsService,)
+from services.model_evaluation import (ModelEvaluationService,)
 
 logger = get_logger(__name__)
 
@@ -106,6 +107,18 @@ def main() -> None:
         X_train=X_train,
         y_train=y_train,
         column_transformer=column_transformer,
+    )
+)
+    
+    model_evaluation = (
+    ModelEvaluationService()
+)
+
+    comparison_table = (
+        model_evaluation.run(
+            trained_models=trained_models,
+            X_test=X_test,
+            y_test=y_test,
     )
 )
     
