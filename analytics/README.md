@@ -1,6 +1,6 @@
 # Analytics Module
 
-## Module 2 - Data Analytics & Exploratory Data Analysis
+## Module 2 - Data Analytics, Exploratory Data Analysis & Machine Learning
 
 ---
 
@@ -30,17 +30,39 @@ The objectives of this module are:
 
 ---
 
-## Technology Stack
+# Technology Stack
 
-| Category | Technology |
-|-----------|------------|
-| Language | Python 3.13 |
-| Data Manipulation | Pandas |
-| Numerical Computing | NumPy |
-| Visualization | Matplotlib, Seaborn |
-| Machine Learning Utilities | Scikit-learn |
-| Logging | Python logging |
-| Dataset | Seaborn Titanic Dataset |
+The project was implemented using the following technologies.
+
+## Programming Language
+
+- Python 3
+
+## Data Processing
+
+- Pandas
+- NumPy
+
+## Visualization
+
+- Matplotlib
+
+## Machine Learning
+
+- Scikit-Learn
+- Imbalanced-Learn
+
+## Model Serialization
+
+- Joblib
+
+## Development Environment
+
+- Visual Studio Code
+- Git
+- GitHub
+
+---
 
 ---
 
@@ -50,47 +72,31 @@ The objectives of this module are:
 analytics/
 │
 ├── config/
-│   ├── logging_config.py
-│   └── settings.py
-│
 ├── datasets/
-│   └── titanic_loader.py
-│
 ├── outputs/
-│   ├── cleaned_titanic.csv
-│   │
 │   ├── figures/
-│   │   ├── age_boxplot.png
-│   │   ├── age_distribution_by_survival.png
-│   │   ├── age_histogram.png
-│   │   ├── age_standardization.png
-│   │   ├── correlation_heatmap.png
-│   │   ├── fare_boxplot.png
-│   │   ├── fare_histogram.png
-│   │   ├── fare_standardization.png
-│   │   ├── fare_vs_age_survival.png
-│   │   ├── survival_by_passenger_class.png
-│   │   └── survival_by_sex.png
-│   │
+│   ├── logs/
+│   ├── models/
 │   └── reports/
-│       ├── correlation_matrix.csv
-│       ├── dataset_profile.csv
-│       ├── missing_value_handling_report.csv
-│       ├── multivariate_story.md
-│       ├── standardization_summary.csv
-│       ├── survival_rate_by_pclass.csv
-│       ├── survival_rate_by_sex.csv
-│       ├── survival_rate_by_sex_pclass.csv
-│       ├── top_correlations.csv
-│       └── univariate_statistics.csv
-│
 ├── services/
-│   ├── bivariate_analysis.py
 │   ├── eda.py
-│   ├── multivariate_analysis.py
 │   ├── preprocessing.py
+│   ├── univariate_analysis.py
+│   ├── bivariate_analysis.py
+│   ├── multivariate_analysis.py
 │   ├── standardization_check.py
-│   └── univariate_analysis.py
+│   ├── model_preparation.py
+│   ├── preprocessing_pipeline.py
+│   ├── classification_models.py
+│   ├── model_evaluation.py
+│   ├── imbalance_analysis.py
+│   ├── hyperparameter_tuning.py
+│   ├── regression_analysis.py
+│   ├── model_comparison.py
+│   └── pipeline_validation.py
+│
+├── utils/
+│   └── exception.py
 │
 ├── main.py
 ├── README.md
@@ -808,27 +814,445 @@ standardization_summary.csv
 
 ---
 
+# Overall Conclusions
+
+The exploratory analysis revealed several important insights regarding passenger survival.
+
+- Female passengers experienced significantly higher survival rates than male passengers.
+- First-class passengers consistently demonstrated the highest probability of survival.
+- Passenger class and fare exhibited the strongest statistical relationship.
+- Age showed only a moderate influence on survival compared with passenger class and sex.
+- Standardization successfully transformed numerical variables while preserving the original dataset for future predictive modeling.
+
+These findings establish a strong analytical foundation for **Module 2 Part B**, where predictive machine learning models will be developed using the cleaned Titanic dataset.
+
+---
+
+---
+
+---
+
+# Module 2 Part B – Predictive Analytics & Machine Learning
+
+## Overview
+
+Part B extends the exploratory analysis performed in Part A by implementing a complete machine learning workflow using the cleaned Titanic dataset. The workflow follows industry best practices, including train/test separation, reusable preprocessing pipelines, model training, evaluation, hyperparameter optimization, imbalance handling, regression analysis, and deployment-ready pipeline validation.
+
+The primary objectives are to:
+
+- Prepare data for predictive modeling.
+- Train and evaluate multiple classification models.
+- Compare different imbalance handling techniques.
+- Optimize the Random Forest classifier using GridSearchCV.
+- Perform multivariate linear regression.
+- Compare classification and regression models.
+- Save and validate a reusable machine learning pipeline.
+
+---
+
+## Task B.1 – Model Preparation
+
+### Objective
+
+Prepare the cleaned dataset for predictive modeling by creating training and testing datasets while preserving the original class distribution.
+
+### Implementation
+
+The cleaned Titanic dataset was divided into training and testing subsets using an 80:20 stratified train/test split.
+
+Stratification was selected because the target variable (`survived`) is moderately imbalanced.
+
+Overall class distribution:
+
+| Class | Count | Percentage |
+|--------|------:|-----------:|
+| Not Survived | 549 | 61.75% |
+| Survived | 340 | 38.25% |
+
+Training dataset:
+
+- 711 samples (80%)
+
+Testing dataset:
+
+- 178 samples (20%)
+
+The class distribution was successfully preserved in both datasets to ensure representative model evaluation.
+
+Generated outputs:
+
+- `class_distribution.csv`
+- `train_test_summary.csv`
+- `stratification_justification.txt`
+
+---
+
+## Task B.2 – Machine Learning Preprocessing Pipeline
+
+### Objective
+
+Build a reusable preprocessing pipeline that prevents data leakage during model training.
+
+### Implementation
+
+A Scikit-Learn `ColumnTransformer` was created to preprocess numerical and categorical features separately.
+
+#### Numerical Features
+
+- pclass
+- age
+- sibsp
+- parch
+- fare
+
+Processing steps:
+
+- Median Imputation
+- StandardScaler
+
+#### Categorical Features
+
+- sex
+- embarked
+
+Processing steps:
+
+- Most Frequent Imputation
+- One-Hot Encoding
+
+The preprocessing pipeline is intentionally **not fitted** during construction.
+
+Instead, it is fitted only on the training dataset inside each model pipeline, ensuring complete separation between training and testing data.
+
+Generated outputs:
+
+- `preprocessing_summary.txt`
+
+---
+
+## Task B.3 – Classification Model Training
+
+### Objective
+
+Train multiple machine learning classifiers using the same preprocessing pipeline and identical train/test split.
+
+### Models Implemented
+
+- Logistic Regression
+- Decision Tree
+- Random Forest
+
+Each classifier was implemented as a complete Scikit-Learn Pipeline consisting of:
+
+- ColumnTransformer
+- Classifier
+
+This design guarantees that preprocessing is performed identically during both training and prediction.
+
+A visualization of the trained Decision Tree was also generated using `plot_tree()`.
+
+Generated outputs:
+
+- `logistic_regression_pipeline.pkl`
+- `decision_tree_pipeline.pkl`
+- `random_forest_pipeline.pkl`
+- `decision_tree.png`
+
+---
+
+## Task B.4 – Model Evaluation
+
+### Objective
+
+Evaluate the performance of all trained classification models using a common testing dataset and compare their predictive capabilities using standard classification metrics.
+
+### Evaluation Metrics
+
+The following evaluation metrics were computed for each classifier:
+
+- Accuracy
+- Precision
+- Recall
+- F1 Score
+- Area Under the ROC Curve (AUC)
+- Confusion Matrix
+
+A Receiver Operating Characteristic (ROC) curve was also generated to compare the classification performance across all models.
+
+### Results
+
+| Model | Accuracy | Precision | Recall | F1 Score | AUC |
+|--------|---------:|----------:|--------:|---------:|----:|
+| Logistic Regression | 0.8090 | 0.7833 | 0.6912 | 0.7344 | 0.8610 |
+| Decision Tree | 0.7697 | 0.6901 | 0.7206 | 0.7050 | 0.7541 |
+| Random Forest | **0.8202** | 0.7813 | **0.7353** | **0.7576** | 0.8179 |
+
+### Observations
+
+- Random Forest achieved the highest Accuracy and F1 Score.
+- Logistic Regression achieved the highest ROC-AUC score, indicating strong ranking capability.
+- Decision Tree produced competitive Recall but lower overall predictive performance compared to the ensemble models.
+
+Generated outputs:
+
+- `classification_model_comparison.csv`
+- `roc_curve_comparison.png`
+- `confusion_matrix_logistic_regression.png`
+- `confusion_matrix_decision_tree.png`
+- `confusion_matrix_random_forest.png`
+
+---
+
+## Task B.5 – Imbalance Handling Comparison
+
+### Objective
+
+Investigate the impact of different class imbalance handling techniques on classification performance.
+
+### Class Distribution
+
+| Class | Count | Percentage |
+|--------|------:|-----------:|
+| Not Survived | 439 | 61.74% |
+| Survived | 272 | 38.26% |
+
+Three imbalance handling strategies were evaluated using the Random Forest classifier:
+
+1. Baseline (No imbalance handling)
+2. Class Weight (`class_weight='balanced'`)
+3. SMOTE (Synthetic Minority Over-sampling Technique)
+
+### Results
+
+| Strategy | Precision | Recall | F1 Score |
+|-----------|----------:|--------:|---------:|
+| Baseline | **0.7812** | **0.7353** | **0.7576** |
+| Class Weight | 0.7692 | 0.7353 | 0.7519 |
+| SMOTE | 0.7460 | 0.6912 | 0.7176 |
+
+### Conclusion
+
+Although the dataset exhibits moderate class imbalance, the baseline Random Forest classifier achieved the highest F1 Score. Applying class weighting produced only a marginal decrease in performance, while SMOTE resulted in lower Precision, Recall, and F1 Score on the test dataset. Consequently, no additional imbalance handling technique was adopted for the final model.
+
+Generated outputs:
+
+- `class_balance_before_smote.csv`
+- `imbalance_comparison.csv`
+- `imbalance_conclusion.txt`
+
+---
+
+## Task B.6 – Hyperparameter Tuning
+
+### Objective
+
+Optimize the Random Forest classifier using GridSearchCV to identify the best-performing hyperparameter combination.
+
+### Hyperparameters Tuned
+
+The following parameters were evaluated:
+
+- `n_estimators`
+- `max_depth`
+- `max_features`
+
+Five-fold cross-validation was used during the search process.
+
+### Best Parameters
+
+| Parameter | Value |
+|------------|------|
+| n_estimators | 300 |
+| max_depth | 5 |
+| max_features | sqrt |
+
+### Performance
+
+| Metric | Value |
+|---------|------:|
+| Best Cross Validation Accuracy | 0.8200 |
+| Out-of-Bag Score | 0.8214 |
+
+The optimized Random Forest model was saved as a reusable Scikit-Learn pipeline containing both the preprocessing steps and the trained classifier.
+
+Generated outputs:
+
+- `best_random_forest_pipeline.pkl`
+- `best_random_forest_parameters.csv`
+- `hyperparameter_tuning_summary.txt`
+
+---
+
+## Task B.7 – Regression Analysis
+
+### Objective
+
+Perform a multivariate linear regression analysis using the Titanic dataset to predict passenger fare from the remaining available features.
+
+### Target Variable
+
+- `fare`
+
+### Regression Model
+
+A Linear Regression model was trained using the same train/test split methodology adopted throughout the classification tasks. The preprocessing pipeline handled missing values, categorical encoding, and feature scaling before fitting the regression model.
+
+### Evaluation Metrics
+
+| Metric | Value |
+|---------|------:|
+| Mean Absolute Error (MAE) | 21.0986 |
+| Root Mean Squared Error (RMSE) | 41.7021 |
+| R² Score | 0.3482 |
+| Adjusted R² | 0.3213 |
+
+### Residual Analysis
+
+A residual plot was generated to assess the assumptions of linear regression.
+
+**Observation**
+
+The residuals are reasonably scattered around zero without a strong systematic pattern. Although some variation increases for larger predicted fares, there is no clear evidence of severe heteroscedasticity. The model provides moderate predictive capability, which is reflected by the relatively low R² score.
+
+Generated outputs:
+
+- `regression_metrics.csv`
+- `regression_conclusion.txt`
+- `regression_residual_plot.png`
+
+---
+
+## Task B.8 – Model Comparison
+
+### Objective
+
+Summarize the performance of all classification and regression models in a single comparison report while keeping their evaluation metrics separate because they represent different learning tasks.
+
+### Classification Models
+
+| Model | Accuracy | Precision | Recall | F1 Score | AUC |
+|--------|---------:|----------:|--------:|---------:|----:|
+| Logistic Regression | 0.8090 | 0.7833 | 0.6912 | 0.7344 | 0.8610 |
+| Decision Tree | 0.7697 | 0.6901 | 0.7206 | 0.7050 | 0.7541 |
+| Random Forest | **0.8202** | 0.7813 | **0.7353** | **0.7576** | 0.8179 |
+
+### Regression Model
+
+| Model | MAE | RMSE | R² | Adjusted R² |
+|--------|----:|-----:|---:|------------:|
+| Linear Regression | 21.0986 | 41.7021 | 0.3482 | 0.3213 |
+
+### Final Recommendation
+
+Among the evaluated classification models, the **Random Forest classifier** is recommended for deployment.
+
+Although Logistic Regression achieved the highest ROC-AUC score (0.8610), the Random Forest classifier delivered the strongest overall predictive performance by achieving the highest Accuracy (0.8202), highest Recall (0.7353), and highest F1 Score (0.7576). These metrics demonstrate a better balance between identifying survivors and minimizing misclassification errors. Additionally, after hyperparameter tuning, the optimized Random Forest achieved an Out-of-Bag (OOB) score of 0.8214, further supporting its robustness and generalization capability.
+
+Generated outputs:
+
+- `final_model_comparison.csv`
+- `model_recommendation.txt`
+
+---
+
+## Task B.9 – Pipeline Serialization & Validation
+
+### Objective
+
+Save the best-performing machine learning pipeline as a reusable production-ready artifact and verify that it can perform predictions directly on raw input data.
+
+### Pipeline Serialization
+
+The optimized Random Forest pipeline was serialized using Joblib.
+
+The saved pipeline contains:
+
+- Median Imputer
+- StandardScaler
+- One-Hot Encoder
+- ColumnTransformer
+- Optimized Random Forest Classifier
+
+Saving the complete preprocessing and modeling workflow ensures that future predictions require no manual preprocessing.
+
+### Pipeline Validation
+
+The serialized pipeline was reloaded using `joblib.load()` and evaluated using a sample passenger record containing raw, unprocessed feature values.
+
+Example input:
+
+| Feature | Value |
+|---------|------|
+| Passenger Class | 1 |
+| Age | 30 |
+| Siblings/Spouses | 1 |
+| Parents/Children | 0 |
+| Fare | 50.0 |
+| Sex | Male |
+| Embarked | S |
+
+Prediction Result
+
+| Output | Value |
+|--------|------|
+| Predicted Class | Not Survived |
+| Probability (Not Survived) | 63.96% |
+| Probability (Survived) | 36.04% |
+
+The successful prediction confirms that the saved pipeline performs preprocessing and inference seamlessly on raw passenger data without requiring any additional feature engineering.
+
+Generated outputs:
+
+- `best_random_forest_pipeline.pkl`
+
+---
+
+---
+
 # Generated Outputs
 
-The analytics pipeline automatically generates the following artifacts.
+The analytics pipeline generates the following artifacts during execution.
+
+## Reports
+
+| Report | Description |
+|----------|-------------|
+| `eda_summary.txt` | Summary of Exploratory Data Analysis |
+| `missing_values_report.csv` | Missing value analysis |
+| `summary_statistics.csv` | Descriptive statistics |
+| `class_distribution.csv` | Overall target class distribution |
+| `train_test_summary.csv` | Train/Test split summary |
+| `stratification_justification.txt` | Stratified sampling justification |
+| `preprocessing_summary.txt` | Machine learning preprocessing configuration |
+| `classification_model_comparison.csv` | Classification evaluation metrics |
+| `class_balance_before_smote.csv` | Training class distribution before imbalance handling |
+| `imbalance_comparison.csv` | Comparison of imbalance handling strategies |
+| `imbalance_conclusion.txt` | Best imbalance handling strategy |
+| `best_random_forest_parameters.csv` | Best hyperparameters from GridSearchCV |
+| `hyperparameter_tuning_summary.txt` | Hyperparameter tuning summary |
+| `regression_metrics.csv` | Linear regression evaluation metrics |
+| `regression_conclusion.txt` | Regression analysis interpretation |
+| `final_model_comparison.csv` | Combined classification and regression comparison |
+| `model_recommendation.txt` | Final model deployment recommendation |
+
+---
 
 ## Figures
 
-```
-outputs/figures/
-
-age_histogram.png
-age_boxplot.png
-fare_histogram.png
-fare_boxplot.png
-correlation_heatmap.png
-survival_by_sex.png
-survival_by_passenger_class.png
-age_distribution_by_survival.png
-fare_vs_age_survival.png
-age_standardization.png
-fare_standardization.png
-```
+| Figure | Description |
+|----------|-------------|
+| `age_distribution.png` | Age distribution |
+| `fare_distribution.png` | Fare distribution |
+| `survival_distribution.png` | Survival count plot |
+| `gender_distribution.png` | Gender distribution |
+| `correlation_heatmap.png` | Feature correlation heatmap |
+| `pairplot.png` | Pairwise feature relationships |
+| `decision_tree.png` | Decision Tree visualization |
+| `roc_curve_comparison.png` | ROC curve comparison |
+| `confusion_matrix_logistic_regression.png` | Logistic Regression confusion matrix |
+| `confusion_matrix_decision_tree.png` | Decision Tree confusion matrix |
+| `confusion_matrix_random_forest.png` | Random Forest confusion matrix |
+| `regression_residual_plot.png` | Linear Regression residual plot |
 
 ---
 
@@ -851,48 +1275,65 @@ standardization_summary.csv
 
 ---
 
+## Saved Models
+
+| Model | Description |
+|---------|-------------|
+| `logistic_regression_pipeline.pkl` | Complete Logistic Regression pipeline |
+| `decision_tree_pipeline.pkl` | Complete Decision Tree pipeline |
+| `random_forest_pipeline.pkl` | Complete Random Forest pipeline |
+| `best_random_forest_pipeline.pkl` | Tuned production-ready Random Forest pipeline |
+
+
 # Learning Outcomes
 
-This module demonstrates the complete exploratory data analysis workflow for a real-world dataset.
+This module demonstrates the complete lifecycle of an analytics and machine learning project, including:
 
-The implementation includes:
-
-- Dataset profiling and exploratory analysis.
-- Rule-based missing value handling.
-- Univariate statistical analysis.
-- Bivariate relationship analysis.
-- Correlation analysis and visualization.
-- Multivariate storytelling using multiple charts.
-- Feature standardization using z-score normalization.
-- Modular Python application design.
-- Automated report generation.
-- Reproducible analytical workflows.
-
----
-
-# Overall Conclusions
-
-The exploratory analysis revealed several important insights regarding passenger survival.
-
-- Female passengers experienced significantly higher survival rates than male passengers.
-- First-class passengers consistently demonstrated the highest probability of survival.
-- Passenger class and fare exhibited the strongest statistical relationship.
-- Age showed only a moderate influence on survival compared with passenger class and sex.
-- Standardization successfully transformed numerical variables while preserving the original dataset for future predictive modeling.
-
-These findings establish a strong analytical foundation for **Module 2 Part B**, where predictive machine learning models will be developed using the cleaned Titanic dataset.
+- Exploratory Data Analysis (EDA)
+- Data Cleaning and Standardization
+- Feature Selection
+- Stratified Train/Test Splitting
+- Pipeline-Based Data Preprocessing
+- Missing Value Imputation
+- Feature Scaling
+- Categorical Encoding
+- Classification Model Development
+- Decision Tree Visualization
+- Model Evaluation using Standard Classification Metrics
+- ROC Curve and AUC Analysis
+- Class Imbalance Handling using Class Weights and SMOTE
+- Hyperparameter Optimization using GridSearchCV
+- Out-of-Bag (OOB) Validation
+- Multivariate Linear Regression
+- Residual Analysis
+- Comparative Model Evaluation
+- Pipeline Serialization using Joblib
+- End-to-End Pipeline Validation on Raw Data
+- Modular and Reusable Machine Learning Architecture
 
 ---
 
 # Future Enhancements
 
-Potential improvements for future work include:
+The current implementation establishes a strong machine learning foundation. Potential future enhancements include:
 
-- Additional feature engineering using family size and passenger titles.
-- Feature selection based on statistical importance.
-- Interactive dashboards using Plotly or Streamlit.
-- Automated EDA report generation.
-- Predictive modeling using multiple classification algorithms.
-- Hyperparameter optimization and model deployment.
+- Evaluate additional ensemble models such as XGBoost, LightGBM, and CatBoost.
+- Perform automated feature selection and feature importance analysis.
+- Introduce nested cross-validation for more robust model evaluation.
+- Add model explainability using SHAP or LIME.
+- Implement experiment tracking with MLflow.
+- Expose trained models through REST APIs using FastAPI.
+- Containerize the analytics pipeline using Docker.
+- Automate model retraining with CI/CD pipelines.
+- Integrate real-time prediction services for deployment.
+- Implement model monitoring and drift detection for production environments.
 
 ---
+
+# Conclusion
+
+Module 2 successfully implements a complete end-to-end analytics and machine learning workflow using the Titanic dataset. Starting from exploratory data analysis, the project progresses through data preprocessing, feature engineering, predictive modeling, model evaluation, class imbalance analysis, hyperparameter optimization, regression analysis, and production-ready pipeline validation.
+
+The implementation follows industry-standard machine learning practices by preventing data leakage through pipeline-based preprocessing, preserving class distribution using stratified sampling, and evaluating multiple algorithms using consistent performance metrics. The optimized Random Forest classifier demonstrated the strongest overall classification performance and was selected as the recommended deployment model.
+
+By combining statistical analysis with predictive modeling and reusable software architecture, this module provides a scalable, maintainable, and production-oriented analytics solution that serves as a strong foundation for future machine learning applications.
