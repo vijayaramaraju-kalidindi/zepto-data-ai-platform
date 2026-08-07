@@ -13,6 +13,7 @@ venv/
 # Logs
 *.log
 outputs/logs/
+!outputs/logs/.gitkeep
 
 # SQLite Database
 outputs/database/*.db
@@ -28,3 +29,7 @@ outputs/dataframe_results/
 # OS Files
 .DS_Store
 Thumbs.db
+
+chroma_db/
+
+.idea/
