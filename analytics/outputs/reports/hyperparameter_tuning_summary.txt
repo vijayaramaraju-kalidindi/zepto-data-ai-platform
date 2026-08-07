@@ -1,0 +1,9 @@
+Random Forest Hyperparameter Tuning
+===================================
+
+Best Parameters
+{'classifier__max_depth': 5, 'classifier__max_features': 'sqrt', 'classifier__n_estimators': 300}
+
+Best Cross Validation Accuracy : 0.8200
+
+Out-of-Bag Score : 0.8214

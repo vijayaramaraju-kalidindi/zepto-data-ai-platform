@@ -1,0 +1,15 @@
+Imbalance Handling Comparison
+============================
+
+Best Strategy : Baseline
+
+Precision : 0.7812
+Recall    : 0.7353
+F1 Score  : 0.7576
+
+Three strategies were evaluated:
+1. Baseline Random Forest
+2. Random Forest with class_weight='balanced'
+3. Random Forest with SMOTE oversampling
+
+The selected strategy achieved the highest F1 Score while maintaining a good balance between precision and recall. Since F1 Score combines both metrics into a single measure, it is the most appropriate metric for comparing performance on moderately imbalanced datasets.

@@ -14,6 +14,12 @@ from services.model_preparation import (ModelPreparationService,)
 from services.preprocessing_pipeline import (PreprocessingPipelineService,)
 from services.classification_models import (ClassificationModelsService,)
 from services.model_evaluation import (ModelEvaluationService,)
+from services.imbalance_analysis import (ImbalanceAnalysisService,)
+from services.hyperparameter_tuning import (HyperparameterTuningService,)
+from services.regression_analysis import (RegressionAnalysisService,)
+from services.model_comparison import (ModelComparisonService,)
+from services.pipeline_validation import (PipelineValidationService,)
+
 
 logger = get_logger(__name__)
 
@@ -50,7 +56,7 @@ def main() -> None:
     
     univariate = (
         UnivariateAnalysisService()
-)
+    )
 
     univariate.run(
         dataframe,
@@ -66,7 +72,7 @@ def main() -> None:
     
     multivariate = (
         MultivariateAnalysisService()
-)
+    )
 
     multivariate.run(
         dataframe,
@@ -87,20 +93,20 @@ def main() -> None:
     X_test,
     y_train,
     y_test,
-) = model_preparation.run(
+    ) = model_preparation.run(
     dataframe,
-)
+    )
 
     preprocessing_pipeline = (
         PreprocessingPipelineService()
-)
+    )
 
     column_transformer = (
     preprocessing_pipeline.run()
-)
+    )
     classification_models = (
     ClassificationModelsService()
-)
+    )
 
     trained_models = (
         classification_models.run(
@@ -112,7 +118,7 @@ def main() -> None:
     
     model_evaluation = (
     ModelEvaluationService()
-)
+    )
 
     comparison_table = (
         model_evaluation.run(
@@ -121,6 +127,51 @@ def main() -> None:
             y_test=y_test,
     )
 )
+    imbalance_analysis = (
+    ImbalanceAnalysisService()
+    )
+
+    imbalance_comparison = (
+        imbalance_analysis.run(
+            X_train=X_train,
+            X_test=X_test,
+            y_train=y_train,
+            y_test=y_test,
+            column_transformer=column_transformer,
+        )
+    )
+    
+    hyperparameter_tuning = (
+    HyperparameterTuningService()
+    )
+
+    best_pipeline = (
+        hyperparameter_tuning.run(
+            X_train=X_train,
+            y_train=y_train,
+            column_transformer=column_transformer,
+        )
+    )
+
+    regression_analysis = (
+        RegressionAnalysisService()
+    )
+
+    regression_analysis.run(
+        dataframe,
+    )
+    
+    model_comparison = (
+    ModelComparisonService()
+    )
+    
+    model_comparison.run()
+
+    pipeline_validation = (
+    PipelineValidationService()
+    )
+
+    pipeline_validation.run()
     
     logger.info(
         "Rows: %s",

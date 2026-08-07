@@ -1,0 +1,11 @@
+Regression Analysis
+===================
+
+MAE : 21.0986
+RMSE : 41.7021
+R² : 0.3482
+Adjusted R² : 0.3213
+
+Residual Plot Interpretation
+----------------------------
+Inspect the residual plot for a random scatter around zero. If residuals show a funnel shape or systematic pattern, it suggests heteroscedasticity. Otherwise, a random spread indicates that the constant variance assumption is reasonably satisfied.

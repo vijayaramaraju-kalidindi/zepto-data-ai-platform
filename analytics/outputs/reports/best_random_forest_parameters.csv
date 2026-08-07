@@ -1,0 +1,2 @@
+classifier__max_depth,classifier__max_features,classifier__n_estimators
+5,sqrt,300

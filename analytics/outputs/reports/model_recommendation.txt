@@ -1,0 +1,8 @@
+Final Model Recommendation
+==========================
+
+The random_forest classifier is recommended for deployment because it achieved the highest overall balance between precision and recall.
+
+It achieved an Accuracy of 0.8202, Precision of 0.7812, Recall of 0.7353, F1 Score of 0.7576, and an AUC of 0.8179.
+
+Among the evaluated classifiers, this model provides the strongest overall classification performance while maintaining good discrimination between survivors and non-survivors. Based on these evaluation metrics, it is the most suitable model for deployment.
