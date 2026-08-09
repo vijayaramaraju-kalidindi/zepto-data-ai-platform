@@ -1,4 +1,4 @@
-"""
+﻿"""
 Application configuration.
 
 Centralized configuration for the

@@ -1,4 +1,4 @@
-"""
+﻿"""
 Document Ingestion Service.
 
 Coordinates the complete document

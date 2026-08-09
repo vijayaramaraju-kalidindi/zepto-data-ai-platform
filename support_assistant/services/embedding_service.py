@@ -1,4 +1,4 @@
-"""
+﻿"""
 Embedding Service.
 
 Chunks documents and generates
@@ -35,8 +35,8 @@ class EmbeddingService:
 
     def __init__(
         self,
-        chunk_size: int = 500,
-        chunk_overlap: int = 50,
+        chunk_size: int = 1000,
+        chunk_overlap: int = 100,
     ) -> None:
 
         self.chunk_size = chunk_size
@@ -140,62 +140,61 @@ class EmbeddingService:
         text: str,
     ) -> list[str]:
         """
-        Split text into overlapping
-        chunks.
+        Split policy content into logical sections
+        while preserving complete policy headings.
 
-        Parameters
-        ----------
-        text : str
-
-        Returns
-        -------
-        list[str]
+        A new chunk starts when a known policy heading
+        is encountered.
         """
 
-        chunks = []
+        import re
 
-        start = 0
+        pattern = (
+            r"(?=\b(?:Delivery|Order Cancellation|Return|Refund|"
+            r"Membership|Tracking|Gift Card|Support Hours)"
+            r"\s+Policy\s*:)"
+        )
 
-        while start < len(text):
+        sections = re.split(
+            pattern,
+            text,
+        )
 
-            end = (
-                start
-                + self.chunk_size
-            )
-
-            chunks.append(
-                text[start:end]
-            )
-
-            start += (
-                self.chunk_size
-                - self.chunk_overlap
-            )
+        chunks = [
+            section.strip()
+            for section in sections
+            if section.strip()
+        ]
 
         return chunks
+        return chunks
+    def generate_query_embedding(
+        self,
+        question: str,
+    ) -> list[float]:
+        """
+        Generate an embedding for a user query.
+        """
 
-def generate_query_embedding(
-    self,
-    query: str,
-):
-    """
-    Generate an embedding for a
-    user query.
+        logger.info(
+            "Generating query embedding."
+        )
 
-    Parameters
-    ----------
-    query : str
+        try:
 
-    Returns
-    -------
-    numpy.ndarray
-    """
+            embedding = self.model.encode(
+                question,
+                normalize_embeddings=True,
+            )
 
-    logger.info(
-        "Generating query embedding."
-    )
+            return embedding.tolist()
 
-    return self.model.encode(
-        query,
-        convert_to_numpy=True,
-    )
+        except Exception as error:
+
+            logger.exception(
+                "Query embedding generation failed."
+            )
+
+            raise EmbeddingGenerationError(
+                str(error),
+            ) from error

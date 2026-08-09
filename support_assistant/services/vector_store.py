@@ -1,4 +1,4 @@
-"""
+﻿"""
 Vector Store Service.
 
 Stores and retrieves document
@@ -187,7 +187,7 @@ class VectorStoreService:
 
             return self.collection.query(
                 query_embeddings=[
-                    query_embedding.tolist()
+                    query_embedding
                 ],
                 n_results=top_k,
             )
@@ -201,4 +201,4 @@ class VectorStoreService:
             raise VectorStoreError(
                 str(error),
             ) from error
-            
+

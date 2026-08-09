@@ -1,4 +1,4 @@
-"""
+﻿"""
 Logging configuration.
 
 Provides a centralized logger

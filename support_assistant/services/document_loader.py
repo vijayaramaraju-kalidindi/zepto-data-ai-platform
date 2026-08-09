@@ -1,4 +1,4 @@
-"""
+﻿"""
 Document Loader Service.
 
 Loads policy documents from the

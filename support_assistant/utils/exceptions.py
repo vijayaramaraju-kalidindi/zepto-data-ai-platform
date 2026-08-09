@@ -1,4 +1,4 @@
-"""
+﻿"""
 Custom exceptions.
 
 Defines project-specific exceptions
@@ -27,7 +27,6 @@ class DocumentLoadingError(
     """
 
     pass
-
 
 class EmbeddingGenerationError(
     SupportAssistantError,
