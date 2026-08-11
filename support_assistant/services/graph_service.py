@@ -1,4 +1,4 @@
-﻿"""
+"""
 LangGraph workflow for the Support Assistant.
 """
 
@@ -14,6 +14,18 @@ from services.retrieval_service import (
     RetrievalService,
 )
 
+from services.prompt_service import (
+    PromptService,
+)
+
+from services.llm_service import (
+    LLMService,
+)
+
+from models.response_models import (
+    FinalAnswer,
+)
+
 logger = get_logger(__name__)
 
 
@@ -24,8 +36,9 @@ class SupportAssistantState(TypedDict, total=False):
 
     question: str
     intent: str
-    retrieved_context: list[str]
+    retrieved_context: list[dict]
     answer: str
+    response: dict
 
 
 class GraphService:
@@ -50,6 +63,14 @@ class GraphService:
 
         self.retrieval_service = (
             RetrievalService()
+        )
+
+        self.prompt_service = (
+            PromptService()
+        )
+
+        self.llm_service = (
+            LLMService()
         )
 
         self.graph = self._build_graph()
@@ -93,34 +114,78 @@ class GraphService:
         state: SupportAssistantState,
     ) -> SupportAssistantState:
         """
-        Retrieve the top-3 policy chunks and
-        generate the required mock response.
+        Retrieve relevant policy chunks, build the structured
+        prompt, generate the answer, and enforce the FinalAnswer
+        response schema.
         """
 
         question = state["question"]
 
         context = (
             self.retrieval_service
-            .retrieve_context(
+            .retrieve_chunks(
                 question,
                 top_k=3,
             )
         )
 
-        if context:
-            answer = (
-                "Based on the retrieved context:\n\n"
-                "Relevant Zepto policy information was retrieved."
+        context_text = [
+            chunk["text"]
+            for chunk in context
+        ]
+
+        prompt = self.prompt_service.build_prompt(
+            question=question,
+            context=context_text,
+        )
+
+        if self.llm_service.mock_llm:
+
+            answer = self.llm_service.generate_answer(
+                prompt,
             )
+
+            response = FinalAnswer(
+                answer=answer,
+                sources=[
+                    chunk["id"]
+                    for chunk in context
+                ],
+                confidence=1.0,
+            )
+
         else:
-            answer = (
-                "Based on the retrieved context:\n\n"
-                "No relevant policy information was found."
+
+            raw_response = (
+                self.llm_service
+                .generate_raw_answer(
+                    prompt,
+                )
             )
+
+            llm_response = (
+                self.llm_service
+                ._validate_json_response(
+                    raw_response,
+                )
+            )
+
+            response = FinalAnswer(
+                answer=llm_response.answer,
+                sources=[
+                    chunk["id"]
+                    for chunk in context
+                ],
+                confidence=llm_response.confidence,
+            )
+
+            answer = response.answer
+
         return {
             **state,
             "retrieved_context": context,
             "answer": answer,
+            "response": response.model_dump(),
         }
 
     def direct_answer(
@@ -136,9 +201,16 @@ class GraphService:
             "Zepto policies right now."
         )
 
+        response = FinalAnswer(
+            answer=answer,
+            sources=[],
+            confidence=1.0,
+        )
+
         return {
             **state,
             "answer": answer,
+            "response": response.model_dump(),
         }
 
     def _route_after_classification(

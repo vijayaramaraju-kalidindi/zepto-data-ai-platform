@@ -1,22 +1,27 @@
-﻿"""
+"""
 LLM Service.
 
-Provides a controlled interface for
-LLM-based answer generation.
+Provides a controlled interface for LLM-based
+answer generation.
 
 MOCK_LLM=1 or unset:
-    Uses deterministic mock responses.
+Uses deterministic mock responses.
 
 MOCK_LLM=0:
-    Enables the optional real LLM path.
+Uses Groq as the optional public LLM.
 """
 
 from __future__ import annotations
 
 import os
+import json
 
 from config.logging_config import (
     get_logger,
+)
+
+from models.response_models import (
+    FinalAnswer,
 )
 
 from utils.exceptions import (
@@ -30,7 +35,7 @@ class LLMService:
     """
     Provide LLM answer generation.
 
-    The mock implementation is the required
+    The mock implementation remains the required
     baseline for the Support Assistant.
     """
 
@@ -39,16 +44,27 @@ class LLMService:
         Initialize the LLM service.
         """
 
-        self.mock_llm = os.getenv(
-            "MOCK_LLM",
-            "1",
-        ) != "0"
+        self.mock_llm = (
+            os.getenv(
+                "MOCK_LLM",
+                "1",
+            )
+            != "0"
+        )
+
+        self.groq_model = os.getenv(
+            "GROQ_MODEL",
+            "llama-3.1-8b-instant",
+        )
 
         if self.mock_llm:
+
             logger.info(
                 "LLM service initialized in MOCK_LLM mode."
             )
+
         else:
+
             logger.info(
                 "LLM service initialized in real LLM mode."
             )
@@ -82,13 +98,21 @@ class LLMService:
                 )
 
                 return (
-                    "Mock LLM response: "
-                    "Answer generated using the provided context."
+                    "Based on the retrieved context:\n\n"
+                    "Relevant Zepto policy information was retrieved."
                 )
+
+            logger.info(
+                "Generating answer using Groq model: %s",
+                self.groq_model,
+            )
 
             return self._generate_real_answer(
                 prompt,
             )
+
+        except LLMServiceError:
+            raise
 
         except Exception as error:
 
@@ -100,18 +124,251 @@ class LLMService:
                 str(error),
             ) from error
 
+    def generate_raw_answer(
+        self,
+        prompt: str,
+    ) -> str:
+        """
+        Generate and validate a raw LLM response.
+
+        MOCK_LLM mode remains deterministic.
+
+        In real LLM mode, the response is validated
+        against the FinalAnswer schema. If validation
+        fails, the LLM is retried up to two additional
+        times with a corrective instruction.
+        """
+
+        if self.mock_llm:
+
+            logger.info(
+                "Generating raw answer using mock LLM."
+            )
+
+            return (
+                "Based on the retrieved context:\n\n"
+                "Relevant Zepto policy information was retrieved."
+            )
+
+        current_prompt = prompt
+
+        max_attempts = 3
+
+        for attempt in range(
+            1,
+            max_attempts + 1,
+        ):
+
+            logger.info(
+                "Generating real LLM response "
+                "(attempt %s/%s).",
+                attempt,
+                max_attempts,
+            )
+
+            try:
+
+                raw_response = (
+                    self._generate_real_answer(
+                        current_prompt,
+                    )
+                )
+
+                self._validate_json_response(
+                    raw_response,
+                )
+
+                logger.info(
+                    "LLM response validated successfully "
+                    "on attempt %s.",
+                    attempt,
+                )
+
+                return raw_response
+
+            except LLMServiceError as error:
+
+                logger.warning(
+                    "LLM response validation failed "
+                    "on attempt %s/%s: %s",
+                    attempt,
+                    max_attempts,
+                    error,
+                )
+
+                if attempt == max_attempts:
+
+                    logger.error(
+                        "LLM response failed validation "
+                        "after %s attempts.",
+                        max_attempts,
+                    )
+
+                    return (
+                        '{"answer":"ERROR: Unable to generate '
+                        'a valid structured response.",'
+                        '"sources":[],"confidence":0.0}'
+                    )
+
+                current_prompt = (
+                    f"{prompt}\n\n"
+                    "CORRECTIVE INSTRUCTION:\n"
+                    "Your previous response did not conform to "
+                    "the required JSON schema.\n"
+                    "Return ONLY valid JSON.\n"
+                    "The JSON must contain exactly these fields:\n"
+                    "- answer: string\n"
+                    "- sources: list of strings\n"
+                    "- confidence: number between 0 and 1\n"
+                    "Do not include markdown, explanations, "
+                    "or code fences."
+                )
+
+            except Exception as error:
+
+                logger.exception(
+                    "Unexpected LLM error on attempt %s.",
+                    attempt,
+                )
+
+                if attempt == max_attempts:
+
+                    return (
+                        '{"answer":"ERROR: Unable to generate '
+                        'a valid structured response.",'
+                        '"sources":[],"confidence":0.0}'
+                    )
+
+                current_prompt = (
+                    f"{prompt}\n\n"
+                    "CORRECTIVE INSTRUCTION:\n"
+                    "Return ONLY valid JSON matching the "
+                    "required response schema."
+                )
+
+        return (
+            '{"answer":"ERROR: Unable to generate '
+            'a valid structured response.",'
+            '"sources":[],"confidence":0.0}'
+        )
+
+    def _validate_json_response(
+        self,
+        raw_response: str,
+    ) -> FinalAnswer:
+        """
+        Parse and validate a raw LLM response
+        against the FinalAnswer schema.
+        """
+
+        try:
+
+            data = json.loads(
+                raw_response,
+            )
+
+            response = FinalAnswer(
+                **data,
+            )
+
+            logger.info(
+                "LLM response passed JSON schema validation."
+            )
+
+            return response
+
+        except (json.JSONDecodeError, TypeError, ValueError) as error:
+
+            logger.warning(
+                "LLM response failed JSON schema validation: %s",
+                error,
+            )
+
+            raise LLMServiceError(
+                f"Invalid LLM JSON response: {error}",
+            ) from error
+
     def _generate_real_answer(
         self,
         prompt: str,
     ) -> str:
         """
-        Optional real LLM implementation.
+        Generate an answer using Groq.
 
-        This method is intentionally isolated so
-        the graded MOCK_LLM path remains independent
-        of external API availability.
+        This is the optional public LLM path.
         """
 
-        raise NotImplementedError(
-            "Real LLM integration is optional for Task 3."
-        )
+        try:
+
+            from groq import Groq
+
+            api_key = os.getenv(
+                "GROQ_API_KEY",
+            )
+
+            if not api_key:
+
+                raise LLMServiceError(
+                    "GROQ_API_KEY is not configured."
+                )
+
+            client = Groq(
+                api_key=api_key,
+            )
+
+            logger.info(
+                "Calling Groq model: %s",
+                self.groq_model,
+            )
+
+            completion = (
+                client.chat.completions.create(
+                    model=self.groq_model,
+                    messages=[
+                        {
+                           "role": "system",
+                           "content": (
+                                "You are a Zepto support assistant. "
+                                "Answer using only the provided context. "
+                                "Return ONLY valid JSON with exactly these fields: "
+                                "answer (string), sources (list of strings), "
+                                "confidence (number between 0 and 1). "
+                                "Do not include markdown, explanations, or code fences."
+                            ),
+                        },
+                        {
+                            "role": "user",
+                            "content": prompt,
+                        },
+                    ],
+                    temperature=0,
+                )
+            )
+
+            answer = (
+                completion
+                .choices[0]
+                .message
+                .content
+            )
+
+            if not answer:
+
+                raise LLMServiceError(
+                    "Groq returned an empty response."
+                )
+
+            return answer.strip()
+
+        except LLMServiceError:
+            raise
+
+        except Exception as error:
+
+            logger.exception(
+                "Groq LLM call failed."
+            )
+
+            raise LLMServiceError(
+                str(error),
+            ) from error
