@@ -121,37 +121,43 @@ The Module 3 implementation is organized as a service-oriented application.
 ```text
 support_assistant/
 │
-├── corpus/
-│   ├── doc_01.txt
-│   ├── doc_02.txt
-│   ├── doc_03.txt
-│   ├── doc_04.txt
-│   ├── doc_05.txt
-│   ├── doc_06.txt
-│   ├── doc_07.txt
-│   └── doc_08.txt
+├── api/
+│   └── __pycache__/
 │
-├── services/
-│   ├── embedding_service.py
-│   ├── vector_store.py
-│   ├── retrieval_service.py
-│   ├── graph_service.py
-│   └── ...
+├── chroma_db/
+│   ├── 093f9d8a-91c4-4fc9-b404-fc7586bb2873
+│   ├── 1822ffed-7db7-4675-9995-59d87eb46a7b
+│   ├── 3ed7e383-2aba-47ce-8159-c5b152402220
+│   ├── 44d49bfb-420b-444f-a8e4-83eaffa19cde
+│   ├── 4ba8d9c7-a529-4a2f-9828-aee1b91b1049
+│   ├── 5e2bb0dd-17c8-4a7c-8178-0bcdd2271486
+│   ├── 698e9961-1e4b-4090-8014-367b2bfe4f19
+│   ├── 76f9b3f5-d204-4a9e-8045-23fb4b741b84
+│   ├── 7b86868a-b864-4f5c-9c8e-29f532830676
+│   ├── c82b4d37-c7bd-403d-8224-f7eac8f056b0
+│   └── cdabb0c9-55bf-417f-9b49-7fb726eea20f
 │
-├── prompts/
-│   └── ...
+├── config/
+│   └── __pycache__/
+│
+├── docs/
 │
 ├── models/
-│   └── ...
+│   └── __pycache__/
+│
+├── outputs/
+│   └── logs/
+│
+├── services/
+│   └── __pycache__/
 │
 ├── tests/
-│   ├── test_graph_service.py
-│   └── ...
+│   └── __pycache__/
 │
-├── main.py
-├── Dockerfile
-├── requirements.txt
-└── README.md
+├── utils/
+│   └── __pycache__/
+│
+└── __pycache__/
 ```
 
 The service boundaries used in the implementation separate embedding, vector storage, retrieval, graph orchestration, API handling, and validation.
