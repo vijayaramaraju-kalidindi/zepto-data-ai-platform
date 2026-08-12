@@ -18,9 +18,3 @@ chromadb
 sentence-transformers
 pydantic
 numpy
-fastapi
-uvicorn
-langgraph
-chromadb
-sentence-transformers
-pydantic
