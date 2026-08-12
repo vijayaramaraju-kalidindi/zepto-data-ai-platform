@@ -2,12 +2,22 @@
 Support Assistant.
 
 Application entry point.
+
+Tasks covered:
+    Task 1: Document ingestion
+    Task 2: Structured prompt generation
+    Task 3: LangGraph workflow
+    Task 4: Structured LLM response validation
 """
 
 from __future__ import annotations
 
 from config.logging_config import (
     get_logger,
+)
+
+from models.response_models import (
+    FinalAnswer,
 )
 
 from services.ingestion_service import (
@@ -28,8 +38,8 @@ logger = get_logger(__name__)
 
 def main() -> None:
     """
-    Execute the Support Assistant
-    ingestion and prompt-template validation.
+    Execute the Support Assistant workflow
+    through Task 4.
     """
 
     logger.info(
@@ -47,7 +57,7 @@ def main() -> None:
     ingestion_service.run()
 
     logger.info(
-        "Document ingestion completed."
+        "Task 1: Document ingestion completed."
     )
 
     # --------------------------------------------------
@@ -75,7 +85,7 @@ def main() -> None:
     )
 
     logger.info(
-        "Task 2 structured prompt created successfully."
+        "Task 2: Structured prompt created successfully."
     )
 
     logger.debug(
@@ -83,18 +93,27 @@ def main() -> None:
         prompt,
     )
 
+    # --------------------------------------------------
+    # Task 3: LangGraph workflow
+    # Task 4: Structured LLM response
+    # --------------------------------------------------
+
     graph_service = GraphService()
 
-    result = graph_service.run(
+    sample_query = (
         "What is the delivery policy?"
     )
 
-    logger.info(
-        "Task 3 graph execution completed."
+    result = graph_service.run(
+        sample_query,
     )
 
     logger.info(
-        "Task 3 intent: %s",
+        "Task 3: Graph execution completed."
+    )
+
+    logger.info(
+        "Intent: %s",
         result.get("intent"),
     )
 
@@ -104,25 +123,47 @@ def main() -> None:
     )
 
     logger.info(
-        "Task 3 retrieved context chunks: %s",
+        "Retrieved context chunks: %s",
         len(retrieved_context),
     )
 
-    # for index, chunk in enumerate(
-    #     retrieved_context,
-    #     start=1,
-    # ):
-
-    #     logger.info(
-    #         "Task 3 retrieved chunk %s:\n%s",
-    #         index,
-    #         chunk,
-    #     )
-
     logger.info(
-        "Task 3 answer:\n%s",
+        "Answer:\n%s",
         result.get("answer", ""),
     )
+
+    # --------------------------------------------------
+    # Task 4: FinalAnswer validation
+    # --------------------------------------------------
+
+    response_data = result.get(
+        "response",
+    )
+
+    if response_data:
+
+        response = FinalAnswer(
+            **response_data,
+        )
+
+        logger.info(
+            "Task 4: Structured response validated successfully."
+        )
+
+        logger.info(
+            "Final response:\n%s",
+            response.model_dump(),
+        )
+
+        logger.info(
+            "Sources: %s",
+            response.sources,
+        )
+
+        logger.info(
+            "Confidence: %.2f",
+            response.confidence,
+        )
 
     logger.info(
         "Support Assistant completed successfully."
